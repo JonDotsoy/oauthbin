@@ -1,0 +1,117 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { oauth } from '../lib/oauth';
+
+export const prerender = false;
+
+// Obtener todos los clients, codes y tokens
+const clients = [];
+for await (const client of oauth.listClients()) {
+	clients.push(client);
+}
+
+const codes = [];
+for await (const code of oauth.listCodes()) {
+	codes.push(code);
+}
+
+const tokens = [];
+for await (const token of oauth.listTokens()) {
+	tokens.push(token);
+}
+---
+
+<BaseLayout title="OAuth Provider - Dashboard" description="OAuth Provider Dashboard">
+	<div class="w-full max-w-6xl space-y-8">
+		<h1 class="text-3xl font-bold text-gray-800 mb-6">OAuth Provider Dashboard</h1>
+
+		<!-- Clients Section -->
+		<div class="bg-white shadow-md rounded-lg p-6">
+			<h2 class="text-2xl font-bold text-gray-800 mb-4">OAuth Clients ({clients.length})</h2>
+			{clients.length === 0 ? (
+				<p class="text-gray-600">No clients found. Run database seed to create a default client.</p>
+			) : (
+				<div class="overflow-x-auto">
+					<table class="w-full">
+						<thead>
+							<tr class="border-b-2 border-gray-200">
+								<th class="text-left py-3 px-4 font-semibold text-gray-700">Client ID</th>
+								<th class="text-left py-3 px-4 font-semibold text-gray-700">Client Secret</th>
+							</tr>
+						</thead>
+						<tbody>
+							{clients.map((client) => (
+								<tr class="border-b border-gray-100 hover:bg-gray-50">
+									<td class="py-3 px-4 text-gray-800 font-mono text-sm">{client.client_id}</td>
+									<td class="py-3 px-4 text-gray-800 font-mono text-sm">{client.client_secret}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			)}
+		</div>
+
+		<!-- Codes Section -->
+		<div class="bg-white shadow-md rounded-lg p-6">
+			<h2 class="text-2xl font-bold text-gray-800 mb-4">Authorization Codes ({codes.length})</h2>
+			{codes.length === 0 ? (
+				<p class="text-gray-600">No authorization codes found.</p>
+			) : (
+				<div class="overflow-x-auto">
+					<table class="w-full">
+						<thead>
+							<tr class="border-b-2 border-gray-200">
+								<th class="text-left py-3 px-4 font-semibold text-gray-700">Code ID</th>
+								<th class="text-left py-3 px-4 font-semibold text-gray-700">Client ID</th>
+								<th class="text-left py-3 px-4 font-semibold text-gray-700">Callback URL</th>
+								<th class="text-left py-3 px-4 font-semibold text-gray-700">Scope</th>
+							</tr>
+						</thead>
+						<tbody>
+							{codes.map((code) => (
+								<tr class="border-b border-gray-100 hover:bg-gray-50">
+									<td class="py-3 px-4 text-gray-800 font-mono text-sm break-all">{code.code_id}</td>
+									<td class="py-3 px-4 text-gray-800 font-mono text-sm">{code.client_id}</td>
+									<td class="py-3 px-4 text-gray-800 font-mono text-sm break-all">{code.callback_url}</td>
+									<td class="py-3 px-4 text-gray-800 font-mono text-sm">{code.scope}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			)}
+		</div>
+
+		<!-- Tokens Section -->
+		<div class="bg-white shadow-md rounded-lg p-6">
+			<h2 class="text-2xl font-bold text-gray-800 mb-4">Access Tokens ({tokens.length})</h2>
+			{tokens.length === 0 ? (
+				<p class="text-gray-600">No access tokens found.</p>
+			) : (
+				<div class="overflow-x-auto">
+					<table class="w-full">
+						<thead>
+							<tr class="border-b-2 border-gray-200">
+								<th class="text-left py-3 px-4 font-semibold text-gray-700">Access Token</th>
+								<th class="text-left py-3 px-4 font-semibold text-gray-700">Token Type</th>
+								<th class="text-left py-3 px-4 font-semibold text-gray-700">Scope</th>
+								<th class="text-left py-3 px-4 font-semibold text-gray-700">Refresh Token</th>
+							</tr>
+						</thead>
+						<tbody>
+							{tokens.map((token) => (
+								<tr class="border-b border-gray-100 hover:bg-gray-50">
+									<td class="py-3 px-4 text-gray-800 font-mono text-sm break-all">{token.access_token}</td>
+									<td class="py-3 px-4 text-gray-800 font-mono text-sm">{token.token_type}</td>
+									<td class="py-3 px-4 text-gray-800 font-mono text-sm">{token.scope}</td>
+									<td class="py-3 px-4 text-gray-800 font-mono text-sm break-all">{token.refresh_token}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			)}
+		</div>
+	</div>
+</BaseLayout>

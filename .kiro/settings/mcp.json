@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "astro": {
+      "url": "https://mcp.docs.astro.build/mcp",
+      "autoApprove": [
+        "search_astro_docs",
+        "search_astro_docs",
+        "search_astro_docs"
+      ]
+    }
+  }
+}
