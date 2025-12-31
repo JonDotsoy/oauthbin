@@ -188,13 +188,13 @@ const buildScopesUrl = (email: string) => {
             </div>
 
             <!-- Form -->
-            <form method="POST" class="mt-8">
+            <div class="mt-8">
               <!-- Email input -->
               <div class="mb-6">
                 {savedEmails.length > 0 && (
                   <div class="mb-4 space-y-2">
                     {savedEmails.map((email) => (
-                      <form method="POST" class="inline-block w-full">
+                      <form method="POST" class="w-full">
                         <input type="hidden" name="saved_account_email" value={email} />
                         <button type="submit" class="w-full text-left p-4 border border-[#dadce0] rounded-[4px] hover:border-[#202124] cursor-pointer transition-all">
                           <div class="text-[14px] text-[#5f6368] mb-1">Saved account</div>
@@ -204,38 +204,41 @@ const buildScopesUrl = (email: string) => {
                     ))}
                   </div>
                 )}
-                <div class="relative border border-[#dadce0] rounded-[4px] hover:border-[#202124] focus-within:border-[#1a73e8] focus-within:border-2 transition-all">
-                  <input
-                    type="text"
-                    id="email"
-                    name="email"
-                    value=""
-                    class="w-full px-4 pt-[22px] pb-[6px] text-[16px] text-[#202124] bg-transparent outline-none rounded-[4px]"
-                  />
-                  <label 
-                    for="email"
-                    class="absolute left-4 top-2 text-[11px] text-[#5f6368] pointer-events-none"
-                  >
-                    {t.emailOrPhone}
-                  </label>
-                </div>
-              </div>
+                
+                <form method="POST">
+                  <div class="relative border border-[#dadce0] rounded-[4px] hover:border-[#202124] focus-within:border-[#1a73e8] focus-within:border-2 transition-all mb-8">
+                    <input
+                      type="text"
+                      id="email"
+                      name="email"
+                      value=""
+                      class="w-full px-4 pt-[22px] pb-[6px] text-[16px] text-[#202124] bg-transparent outline-none rounded-[4px]"
+                    />
+                    <label 
+                      for="email"
+                      class="absolute left-4 top-2 text-[11px] text-[#5f6368] pointer-events-none"
+                    >
+                      {t.emailOrPhone}
+                    </label>
+                  </div>
 
-              <!-- Guest mode info -->
-              <div class="text-[14px] text-[#5f6368] leading-[1.4] mb-8">
-                <p>{t.notYourComputer}</p>
-              </div>
+                  <!-- Guest mode info -->
+                  <div class="text-[14px] text-[#5f6368] leading-[1.4] mb-8">
+                    <p>{t.notYourComputer}</p>
+                  </div>
 
-              <!-- Action buttons -->
-              <div class="flex justify-end items-center">
-                <button
-                  type="submit"
-                  class="bg-[#1a73e8] hover:bg-[#1765cc] active:bg-[#1557b0] text-white font-medium px-6 py-[10px] rounded-[4px] text-[14px] shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:shadow-[0_1px_3px_0_rgba(60,64,67,0.3),0_4px_8px_3px_rgba(60,64,67,0.15)] transition-all"
-                >
-                  {t.next}
-                </button>
+                  <!-- Action buttons -->
+                  <div class="flex justify-end items-center">
+                    <button
+                      type="submit"
+                      class="bg-[#1a73e8] hover:bg-[#1765cc] active:bg-[#1557b0] text-white font-medium px-6 py-[10px] rounded-[4px] text-[14px] shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:shadow-[0_1px_3px_0_rgba(60,64,67,0.3),0_4px_8px_3px_rgba(60,64,67,0.15)] transition-all"
+                    >
+                      {t.next}
+                    </button>
+                  </div>
+                </form>
               </div>
-            </form>
+            </div>
           </div>
         )}
       </div>
