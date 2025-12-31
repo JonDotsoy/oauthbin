@@ -14,6 +14,7 @@ export const POST: APIRoute = async ({ request }) => {
     const redirect_uri = formData.get("redirect_uri") as string;
     const code = formData.get("code") as string;
     const refresh_token = formData.get("refresh_token") as string;
+    const code_verifier = formData.get("code_verifier") as string | null;
 
     console.error({
         grant_type
@@ -24,7 +25,7 @@ export const POST: APIRoute = async ({ request }) => {
     })
 
     if (grant_type === 'authorization_code') {
-        const token = await oauth.resolveCode(code, redirect_uri, client_id, client_secret);
+        const token = await oauth.resolveCode(code, redirect_uri, client_id, client_secret, code_verifier || undefined);
 
         return Response.json(token)
     }

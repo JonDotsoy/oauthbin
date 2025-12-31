@@ -8,6 +8,8 @@ const client_id = Astro.url.searchParams.get("client_id") ?? null;
 const redirect_uri = Astro.url.searchParams.get("redirect_uri") ?? null;
 const scope = Astro.url.searchParams.get("scope") ?? null;
 const state = Astro.url.searchParams.get("state") ?? null;
+const code_challenge = Astro.url.searchParams.get("code_challenge") ?? null;
+const code_challenge_method = Astro.url.searchParams.get("code_challenge_method") ?? null;
 
 // Validar que todos los parámetros requeridos estén presentes
 if (!response_type || !client_id || !redirect_uri || !scope || !state) {
@@ -141,6 +143,8 @@ const randomUsername = `${randomName}-${randomSuffix}`;
             <input type="hidden" name="scope" value={scope} />
             <input type="hidden" name="state" value={state} />
             <input type="hidden" name="redirect_uri" value={redirect_uri} />
+            {code_challenge && <input type="hidden" name="code_challenge" value={code_challenge} />}
+            {code_challenge_method && <input type="hidden" name="code_challenge_method" value={code_challenge_method} />}
 
             <button
                 type="submit"
@@ -193,12 +197,28 @@ const randomUsername = `${randomName}-${randomSuffix}`;
                             >{scope}</td
                         >
                     </tr>
-                    <tr>
+                    <tr class="border-b border-gray-100">
                         <td class="py-2 px-4 text-gray-600">state</td>
                         <td class="py-2 px-4 text-gray-800 font-mono text-sm"
                             >{state}</td
                         >
                     </tr>
+                    {code_challenge && (
+                        <tr class="border-b border-gray-100">
+                            <td class="py-2 px-4 text-gray-600">code_challenge</td>
+                            <td class="py-2 px-4 text-gray-800 font-mono text-sm break-all"
+                                >{code_challenge}</td
+                            >
+                        </tr>
+                    )}
+                    {code_challenge_method && (
+                        <tr>
+                            <td class="py-2 px-4 text-gray-600">code_challenge_method</td>
+                            <td class="py-2 px-4 text-gray-800 font-mono text-sm"
+                                >{code_challenge_method}</td
+                            >
+                        </tr>
+                    )}
                 </tbody>
             </table>
         </div>

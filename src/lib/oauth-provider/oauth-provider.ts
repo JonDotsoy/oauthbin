@@ -27,12 +27,20 @@ export class OAthProvider {
         return await this.#db.putClient(client)
     }
 
-    async generateCode(client_id: string, callback_url: string, scope: string): Promise<Code> {
+    async generateCode(
+        client_id: string, 
+        callback_url: string, 
+        scope: string,
+        code_challenge?: string,
+        code_challenge_method?: string
+    ): Promise<Code> {
         const code: Code = {
             code_id: crypto.randomUUID(),
             client_id,
             callback_url,
-            scope
+            scope,
+            code_challenge,
+            code_challenge_method
         }
         
         return await this.#db.putCode(code)
@@ -50,7 +58,13 @@ export class OAthProvider {
         return await this.#db.putToken(token)
     }
 
-    async resolveCode(code_id: string, redirect_uri: string, client_id: string, client_secret: string): Promise<Token> {
+    async resolveCode(
+        code_id: string, 
+        redirect_uri: string, 
+        client_id: string, 
+        client_secret: string,
+        code_verifier?: string
+    ): Promise<Token> {
         // Validar que el código existe en la base de datos
         const storedCode = await this.#db.getCode(code_id)
         
@@ -62,6 +76,37 @@ export class OAthProvider {
         // Validar que el redirect_uri coincide con el callback_url
         if (storedCode.callback_url !== redirect_uri) {
             throw new Error("Invalid redirect_uri")
+        }
+        
+        // Validar PKCE si se proporcionó code_challenge
+        if (storedCode.code_challenge) {
+            if (!code_verifier) {
+                throw new Error("code_verifier is required for PKCE")
+            }
+            
+            const method = storedCode.code_challenge_method || "plain"
+            let computedChallenge: string
+            
+            if (method === "S256") {
+                // SHA-256 hash del code_verifier
+                const encoder = new TextEncoder()
+                const data = encoder.encode(code_verifier)
+                const hashBuffer = await crypto.subtle.digest("SHA-256", data)
+                const hashArray = Array.from(new Uint8Array(hashBuffer))
+                // Base64url encoding
+                computedChallenge = btoa(String.fromCharCode(...hashArray))
+                    .replace(/\+/g, '-')
+                    .replace(/\//g, '_')
+                    .replace(/=/g, '')
+            } else if (method === "plain") {
+                computedChallenge = code_verifier
+            } else {
+                throw new Error(`Unsupported code_challenge_method: ${method}`)
+            }
+            
+            if (computedChallenge !== storedCode.code_challenge) {
+                throw new Error("Invalid code_verifier")
+            }
         }
         
         // Validar las credenciales del cliente

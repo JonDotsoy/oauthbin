@@ -12,6 +12,8 @@ export const POST: APIRoute = async ({ request }) => {
         const scope = formData.get("scope") as string;
         const state = formData.get("state") as string;
         const redirect_uri = formData.get("redirect_uri") as string;
+        const code_challenge = formData.get("code_challenge") as string | null;
+        const code_challenge_method = formData.get("code_challenge_method") as string | null;
         const debug = ["on","true","1"].includes(formData.get("debug")?.toString().toLowerCase()!);
 
         // Validar que todos los campos requeridos estén presentes
@@ -84,7 +86,13 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         // Flujo de código de autorización (response_type=code)
-        const code = await oauth.generateCode(client_id, redirect_uri, scope);
+        const code = await oauth.generateCode(
+            client_id, 
+            redirect_uri, 
+            scope,
+            code_challenge || undefined,
+            code_challenge_method || undefined
+        );
 
         // Construir URL de redirección con el código y el state
         redirectUrl.searchParams.set("code", code.code_id);
