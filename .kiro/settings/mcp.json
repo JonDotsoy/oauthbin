@@ -7,6 +7,12 @@
         "search_astro_docs",
         "search_astro_docs"
       ]
+    },
+    "playwright": {
+      "command": "bunx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
     }
   }
 }

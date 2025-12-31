@@ -1,5 +1,6 @@
 {
-  "name": "repositories-jondotsoy-mock-oauth-provider",
+  "name": "oauthbin",
+  "private": true,
   "version": "0.0.1",
   "dependencies": {
     "@astrojs/db": "^0.18.3",
