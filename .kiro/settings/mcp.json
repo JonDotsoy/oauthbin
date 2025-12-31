@@ -12,6 +12,13 @@
       "command": "bunx",
       "args": [
         "@playwright/mcp@latest"
+      ],
+      "autoApprove": [
+        "browser_navigate",
+        "browser_type",
+        "browser_snapshot",
+        "browser_click",
+        "browser_take_screenshot"
       ]
     }
   }

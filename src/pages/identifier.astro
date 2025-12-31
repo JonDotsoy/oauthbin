@@ -1,0 +1,263 @@
+---
+import "../styles/global.css";
+
+export const prerender = false;
+
+// Validate required OAuth parameters
+const response_type = Astro.url.searchParams.get("response_type") ?? null;
+const client_id = Astro.url.searchParams.get("client_id") ?? null;
+const redirect_uri = Astro.url.searchParams.get("redirect_uri") ?? null;
+const scope = Astro.url.searchParams.get("scope") ?? null;
+const state = Astro.url.searchParams.get("state") ?? null;
+const code_challenge = Astro.url.searchParams.get("code_challenge") ?? null;
+const code_challenge_method = Astro.url.searchParams.get("code_challenge_method") ?? null;
+
+// Check for missing required parameters
+const missingParams: string[] = [];
+if (!response_type) missingParams.push("response_type");
+if (!client_id) missingParams.push("client_id");
+if (!redirect_uri) missingParams.push("redirect_uri");
+if (!scope) missingParams.push("scope");
+if (!state) missingParams.push("state");
+
+const hasError = missingParams.length > 0;
+
+// Handle POST request
+if (Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  const email = formData.get("email") as string;
+  const savedAccountEmail = formData.get("saved_account_email") as string;
+  
+  const selectedEmail = savedAccountEmail || email;
+  
+  if (selectedEmail) {
+    // Get existing emails from cookie
+    const existingEmailsJson = Astro.cookies.get("user_emails")?.value;
+    let emailList: string[] = [];
+    
+    if (existingEmailsJson) {
+      try {
+        emailList = JSON.parse(existingEmailsJson);
+      } catch (e) {
+        emailList = [];
+      }
+    }
+    
+    // Add new email if it doesn't exist
+    if (!emailList.includes(selectedEmail)) {
+      emailList.unshift(selectedEmail); // Add to beginning of array
+    } else {
+      // Move existing email to the front
+      emailList = [selectedEmail, ...emailList.filter(e => e !== selectedEmail)];
+    }
+    
+    // Save updated list to cookie
+    Astro.cookies.set("user_emails", JSON.stringify(emailList), {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      sameSite: "lax"
+    });
+    
+    // Redirect to scopes page with email and preserve query params
+    const url = new URL("/authorize/scopes", Astro.url.origin);
+    url.searchParams.set("email", selectedEmail);
+    
+    // Preserve existing query params
+    for (const [key, value] of Astro.url.searchParams.entries()) {
+      if (key !== "email") {
+        url.searchParams.set(key, value);
+      }
+    }
+    
+    return Astro.redirect(url.toString());
+  }
+}
+
+// Get emails from cookie if exists
+const savedEmailsJson = Astro.cookies.get("user_emails")?.value;
+let savedEmails: string[] = [];
+
+if (savedEmailsJson) {
+  try {
+    savedEmails = JSON.parse(savedEmailsJson);
+  } catch (e) {
+    savedEmails = [];
+  }
+}
+
+// I18n translations
+const translations = {
+  en: {
+    signIn: "Sign in",
+    withAccount: "with your Account. This account will be available to other apps in the browser.",
+    emailOrPhone: "Email or phone",
+    forgotEmail: "Forgot email?",
+    notYourComputer: "Not your computer? Use Guest mode to sign in privately.",
+    learnMore: "Learn more about using Guest mode",
+    createAccount: "Create account",
+    next: "Next",
+    language: "English (United States)",
+    footer: "oauthbin",
+    errorTitle: "Invalid Request",
+    errorMessage: "The URL is incomplete or malformed. Missing required parameters:",
+    errorExample: "Example of a valid URL:"
+  },
+  es: {
+    signIn: "Iniciar sesión",
+    withAccount: "con tu cuenta. Esta cuenta estará disponible para otras aplicaciones en el navegador.",
+    emailOrPhone: "Correo electrónico o teléfono",
+    forgotEmail: "¿Olvidaste tu correo electrónico?",
+    notYourComputer: "¿No es tu computadora? Usa el modo de invitado para iniciar sesión de forma privada.",
+    learnMore: "Más información sobre el modo de invitado",
+    createAccount: "Crear cuenta",
+    next: "Siguiente",
+    language: "Español",
+    footer: "oauthbin",
+    errorTitle: "Solicitud inválida",
+    errorMessage: "La URL está incompleta o mal formateada. Faltan parámetros requeridos:",
+    errorExample: "Ejemplo de una URL válida:"
+  }
+};
+
+// Get language from query param or default to 'en'
+const lang = (Astro.url.searchParams.get("lang") || "en") as keyof typeof translations;
+const t = translations[lang] || translations.en;
+
+// Build scopes URL with query params
+const buildScopesUrl = (email: string) => {
+  const url = new URL("/authorize/scopes", Astro.url.origin);
+  url.searchParams.set("email", email);
+  
+  // Preserve existing query params
+  for (const [key, value] of Astro.url.searchParams.entries()) {
+    if (key !== "email") {
+      url.searchParams.set(key, value);
+    }
+  }
+  
+  return url.toString();
+};
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Sign in</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-4">
+    <div class="w-full max-w-[450px]">
+      <!-- Main card -->
+      <div class="bg-white rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.1),0_8px_16px_rgba(0,0,0,0.1)] border border-[#dadce0] px-10 py-12">
+        {hasError ? (
+          <!-- Error message -->
+          <div>
+            <div class="mb-6">
+              <h1 class="text-[24px] font-normal text-[#d93025] mb-2 leading-tight">{t.errorTitle}</h1>
+              <p class="text-[14px] text-[#5f6368] leading-[1.4] mb-4">{t.errorMessage}</p>
+              <ul class="list-disc list-inside text-[14px] text-[#d93025] mb-6 space-y-1">
+                {missingParams.map((param) => (
+                  <li class="font-mono">{param}</li>
+                ))}
+              </ul>
+              <div class="bg-[#f8f9fa] border border-[#dadce0] rounded-[4px] p-4">
+                <p class="text-[12px] text-[#5f6368] mb-2">{t.errorExample}</p>
+                <code class="text-[11px] text-[#202124] break-all block">
+                  /identifier?response_type=code&client_id=myapp&redirect_uri=https://example.com/callback&scope=read&state=xyz123
+                </code>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <!-- Normal sign in form -->
+          <div>
+            <!-- Sign in header -->
+            <div class="mb-6">
+              <h1 class="text-[24px] font-normal text-[#202124] mb-2 leading-tight">{t.signIn}</h1>
+              <p class="text-[14px] text-[#5f6368] leading-[1.4]">{t.withAccount}</p>
+            </div>
+
+            <!-- Form -->
+            <form method="POST" class="mt-8">
+              <!-- Email input -->
+              <div class="mb-6">
+                {savedEmails.length > 0 && (
+                  <div class="mb-4 space-y-2">
+                    {savedEmails.map((email) => (
+                      <form method="POST" class="inline-block w-full">
+                        <input type="hidden" name="saved_account_email" value={email} />
+                        <button type="submit" class="w-full text-left p-4 border border-[#dadce0] rounded-[4px] hover:border-[#202124] cursor-pointer transition-all">
+                          <div class="text-[14px] text-[#5f6368] mb-1">Saved account</div>
+                          <div class="text-[16px] text-[#202124] font-medium">{email}</div>
+                        </button>
+                      </form>
+                    ))}
+                  </div>
+                )}
+                <div class="relative border border-[#dadce0] rounded-[4px] hover:border-[#202124] focus-within:border-[#1a73e8] focus-within:border-2 transition-all">
+                  <input
+                    type="text"
+                    id="email"
+                    name="email"
+                    value=""
+                    class="w-full px-4 pt-[22px] pb-[6px] text-[16px] text-[#202124] bg-transparent outline-none rounded-[4px]"
+                  />
+                  <label 
+                    for="email"
+                    class="absolute left-4 top-2 text-[11px] text-[#5f6368] pointer-events-none"
+                  >
+                    {t.emailOrPhone}
+                  </label>
+                </div>
+              </div>
+
+              <!-- Guest mode info -->
+              <div class="text-[14px] text-[#5f6368] leading-[1.4] mb-8">
+                <p>{t.notYourComputer}</p>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="flex justify-end items-center">
+                <button
+                  type="submit"
+                  class="bg-[#1a73e8] hover:bg-[#1765cc] active:bg-[#1557b0] text-white font-medium px-6 py-[10px] rounded-[4px] text-[14px] shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:shadow-[0_1px_3px_0_rgba(60,64,67,0.3),0_4px_8px_3px_rgba(60,64,67,0.15)] transition-all"
+                >
+                  {t.next}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
+
+      <!-- Footer -->
+      <footer class="mt-10 px-4 flex justify-between items-center text-[12px] text-[#5f6368]">
+        <div class="relative">
+          <select 
+            class="appearance-none bg-transparent pr-5 py-1 cursor-pointer outline-none hover:bg-[#f1f3f4] rounded-[4px] px-2 transition-colors"
+            onchange="window.location.href = '?lang=' + this.value"
+          >
+            <option value="en" selected={lang === "en"}>English (United States)</option>
+            <option value="es" selected={lang === "es"}>Español</option>
+          </select>
+          <svg class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[#5f6368]" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <span class="text-[#202124]">{t.footer}</span>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

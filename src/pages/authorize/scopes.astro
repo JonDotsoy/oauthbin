@@ -1,0 +1,166 @@
+---
+import "../../styles/global.css";
+
+export const prerender = false;
+
+// Get scopes from query params
+const scopesParam = Astro.url.searchParams.get("scope") || "";
+const scopes = scopesParam.split(" ").filter(s => s.length > 0);
+const clientId = Astro.url.searchParams.get("client_id") || "Unknown App";
+const email = Astro.url.searchParams.get("email") || "";
+const responseType = Astro.url.searchParams.get("response_type") || "";
+const redirectUri = Astro.url.searchParams.get("redirect_uri") || "";
+const state = Astro.url.searchParams.get("state") || "";
+const codeChallenge = Astro.url.searchParams.get("code_challenge") || "";
+const codeChallengeMethod = Astro.url.searchParams.get("code_challenge_method") || "";
+
+// Handle POST request
+if (Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  const action = formData.get("action") as string;
+  
+  if (action === "deny") {
+    // Redirect back to identifier with preserved query params
+    const url = new URL("/identifier", Astro.url.origin);
+    
+    // Preserve existing query params except email
+    for (const [key, value] of Astro.url.searchParams.entries()) {
+      if (key !== "email") {
+        url.searchParams.set(key, value);
+      }
+    }
+    
+    return Astro.redirect(url.toString());
+  }
+  // If action is "allow", the form will submit to /api/complete_authorize
+}
+
+// I18n translations
+const translations = {
+  en: {
+    title: "Grant Access",
+    appWantsTo: "wants to access your account",
+    thisWillAllow: "This will allow the app to:",
+    allow: "Allow",
+    deny: "Deny",
+    footer: "oauthbin",
+    signedInAs: "Signed in as"
+  },
+  es: {
+    title: "Conceder acceso",
+    appWantsTo: "quiere acceder a tu cuenta",
+    thisWillAllow: "Esto permitirá a la aplicación:",
+    allow: "Permitir",
+    deny: "Denegar",
+    footer: "oauthbin",
+    signedInAs: "Sesión iniciada como"
+  }
+};
+
+// Get language from query param or default to 'en'
+const lang = (Astro.url.searchParams.get("lang") || "en") as keyof typeof translations;
+const t = translations[lang] || translations.en;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{t.title}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-4">
+    <div class="w-full max-w-[450px]">
+      <!-- Main card -->
+      <div class="bg-white rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.1),0_8px_16px_rgba(0,0,0,0.1)] border border-[#dadce0] px-10 py-12">
+        <!-- Header -->
+        <div class="mb-6">
+          <h1 class="text-[24px] font-normal text-[#202124] mb-2 leading-tight">{t.title}</h1>
+          {email && (
+            <div class="text-[14px] text-[#5f6368] mb-4">
+              {t.signedInAs} <span class="font-medium text-[#202124]">{email}</span>
+            </div>
+          )}
+          <p class="text-[14px] text-[#5f6368] leading-[1.4]">
+            <span class="font-medium text-[#202124]">{clientId}</span> {t.appWantsTo}
+          </p>
+        </div>
+
+        <!-- Scopes list -->
+        {scopes.length > 0 && (
+          <div class="mb-8">
+            <p class="text-[14px] text-[#5f6368] mb-3">{t.thisWillAllow}</p>
+            <ul class="space-y-2">
+              {scopes.map((scope) => (
+                <li class="flex items-start gap-3 text-[14px] text-[#202124]">
+                  <svg class="w-5 h-5 text-[#1a73e8] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                  </svg>
+                  <span class="flex-1">{scope}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <!-- Form -->
+        <form action="/api/complete_authorize" method="POST">
+          <!-- Hidden fields for OAuth parameters -->
+          <input type="hidden" name="username" value={email} />
+          <input type="hidden" name="response_type" value={responseType} />
+          <input type="hidden" name="client_id" value={clientId} />
+          <input type="hidden" name="scope" value={scopesParam} />
+          <input type="hidden" name="state" value={state} />
+          <input type="hidden" name="redirect_uri" value={redirectUri} />
+          {codeChallenge && <input type="hidden" name="code_challenge" value={codeChallenge} />}
+          {codeChallengeMethod && <input type="hidden" name="code_challenge_method" value={codeChallengeMethod} />}
+          
+          <!-- Action buttons -->
+          <div class="flex justify-end items-center gap-3">
+            <button
+              type="button"
+              onclick="window.history.back()"
+              class="text-[14px] font-medium text-[#1a73e8] hover:bg-[#f6fafe] px-6 py-[10px] rounded-[4px] transition-colors"
+            >
+              {t.deny}
+            </button>
+            <button
+              type="submit"
+              class="bg-[#1a73e8] hover:bg-[#1765cc] active:bg-[#1557b0] text-white font-medium px-6 py-[10px] rounded-[4px] text-[14px] shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:shadow-[0_1px_3px_0_rgba(60,64,67,0.3),0_4px_8px_3px_rgba(60,64,67,0.15)] transition-all"
+            >
+              {t.allow}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Footer -->
+      <footer class="mt-10 px-4 flex justify-between items-center text-[12px] text-[#5f6368]">
+        <div class="relative">
+          <select 
+            class="appearance-none bg-transparent pr-5 py-1 cursor-pointer outline-none hover:bg-[#f1f3f4] rounded-[4px] px-2 transition-colors"
+            onchange="window.location.href = '?lang=' + this.value"
+          >
+            <option value="en" selected={lang === "en"}>English (United States)</option>
+            <option value="es" selected={lang === "es"}>Español</option>
+          </select>
+          <svg class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[#5f6368]" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <span class="text-[#202124]">{t.footer}</span>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
