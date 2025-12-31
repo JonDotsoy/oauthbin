@@ -1,0 +1,6 @@
+services:
+  services:
+    image: jondotsoy/oauthbin
+    build: .
+    ports:
+      - 4321:4321
