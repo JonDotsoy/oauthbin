@@ -1,0 +1,6 @@
+node_modules/
+.vscode/
+.kiro/
+.astro/
+compose.yaml
+Dockerfile

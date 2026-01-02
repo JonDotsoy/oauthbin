@@ -1,14 +1,14 @@
-FROM oven/bun
+FROM node:24-alpine
 
 WORKDIR /app
 
-COPY . /app
+COPY package*.json ./
 
-RUN bun install
+RUN npm install
 
-ENV HOST=0.0.0.0
+COPY . .
 
+ENV ASTRO_TELEMETRY_DISABLED=1
 EXPOSE 4321
+CMD ["npm", "run", "dev", "--", "--host=0.0.0.0"]
 
-CMD bunx --bun astro dev --host=0.0.0.0
-# CMD [ "bunx", "--bun", "astro", "dev", "--host=${HOST}", "--port=4321" ]
