@@ -14,7 +14,6 @@ export class SQLite implements Store {
     constructor(options?: SQLiteOptions) {
         this.#db = new Database(options?.path || ":memory:")
         this.#setup()
-        console.log("SQLite setup complete")
     }
 
     #setup() {
@@ -175,7 +174,7 @@ export class SQLite implements Store {
         return result
     }
 
-    async deleteToken(access_token: string): Promise<void> {
+    async deleteToken(access_token: string): Promise<vo
         const stmt = this.#db.prepare(`
             DELETE FROM tokens WHERE access_token = ?
         `)

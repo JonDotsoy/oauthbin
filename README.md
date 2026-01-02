@@ -271,7 +271,6 @@ import { AstroDBStore } from './src/lib/oauth-provider/stores/astro-db';
 
 const provider = new OAthProvider({ db: new AstroDBStore() });
 const client = await provider.generateClient();
-console.log(client);
 ```
 
 ## 🚀 Despliegue
