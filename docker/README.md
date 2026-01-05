@@ -43,7 +43,7 @@ services:
 
 You can easily test OAuthBin using Postman with the Authorization Code flow:
 
-![Postman Configuration](../docs/assets/postman-code-configuration.png)
+![Postman Configuration](https://github.com/JonDotsoy/oauthbin/blob/main/docs/assets/postman-code-configuration.png?raw=true)
 
 **Configuration steps:**
 
