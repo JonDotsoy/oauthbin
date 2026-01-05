@@ -134,6 +134,30 @@ scrape_configs:
 ## 🛠️ Environment Variables
 
 - `ASTRO_TELEMETRY_DISABLED=1` - Disables Astro telemetry (pre-configured)
+- `ASTRO_DB_REMOTE_URL=file:/data/oauthbin.db` - Database location (pre-configured)
+
+## 💾 Data Persistence
+
+The container uses a volume at `/data` to persist the OAuth database. To maintain data between container restarts:
+
+```bash
+docker run -p 4321:4321 -v oauthbin-data:/data jondotsoy/oauthbin
+```
+
+Or with Docker Compose:
+
+```yaml
+services:
+  oauth-provider:
+    image: jondotsoy/oauthbin
+    ports:
+      - "4321:4321"
+    volumes:
+      - oauthbin-data:/data
+
+volumes:
+  oauthbin-data:
+```
 
 ## 📖 Complete Documentation
 
@@ -146,7 +170,7 @@ https://github.com/jondotsoy/oauthbin/issues
 
 ## 📄 License
 
-MIT License - see [LICENSE](../LICENSE) file for details
+MIT License - see [LICENSE](https://github.com/JonDotsoy/oauthbin/blob/main/LICENSE) file for details
 
 ---
 
