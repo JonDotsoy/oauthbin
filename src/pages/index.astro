@@ -3,6 +3,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { oauth } from '../lib/oauth';
 import SecretToggle from '../components/ui/SecretToggle';
 import Clipboard from '../components/ui/Clipboard';
+import { Docker } from '../components/icons/docker';
+import { Github } from '../components/icons/github';
 
 export const prerender = false;
 
@@ -25,7 +27,33 @@ for await (const token of oauth.listTokens()) {
 
 <BaseLayout title="OAuth Provider - Dashboard" description="OAuth Provider Dashboard">
 	<div class="w-full max-w-6xl space-y-6 md:space-y-8 px-4 sm:px-6 lg:px-8">
-		<h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 md:mb-6">OAuth Provider Dashboard</h1>
+		<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 md:mb-6">
+			<h1 class="text-2xl sm:text-3xl font-bold text-gray-800">OAuth Provider Dashboard</h1>
+			<div class="flex flex-wrap gap-2">
+				<a 
+					href="https://github.com/JonDotsoy/oauthbin" 
+					target="_blank" 
+					rel="noopener noreferrer"
+					class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white font-medium rounded-lg transition-colors text-sm sm:text-base"
+				>
+					<div class="w-5 h-5 fill-current">
+						<Github />
+					</div>
+					GitHub
+				</a>
+				<a 
+					href="https://hub.docker.com/r/jondotsoy/oauthbin" 
+					target="_blank" 
+					rel="noopener noreferrer"
+					class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm sm:text-base"
+				>
+					<div class="w-5 h-5 fill-current">
+						<Docker />
+					</div>
+					Docker Hub
+				</a>
+			</div>
+		</div>
 
 		<!-- OAuth Endpoints Section -->
 		<div class="bg-white shadow-md rounded-lg p-4 sm:p-6">
@@ -141,5 +169,12 @@ for await (const token of oauth.listTokens()) {
 				</div>
 			)}
 		</div>
+
+		<!-- Footer -->
+		<footer class="text-center py-6 text-gray-600 text-sm">
+			<p>
+				Created by <a href="https://github.com/jondotsoy" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 font-medium">jondotsoy</a> using <a href="https://astro.build/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 font-medium">Astro</a>
+			</p>
+		</footer>
 	</div>
 </BaseLayout>

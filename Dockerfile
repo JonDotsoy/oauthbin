@@ -14,6 +14,7 @@ VOLUME [ "/data" ]
 
 ENV ASTRO_TELEMETRY_DISABLED=1
 ENV ASTRO_DB_REMOTE_URL=file:/data/oauthbin.db
+ENV DEV_TOOLBAR_ENABLED=false
 
 RUN npm run astro db push -- --remote
 RUN npm run astro db execute db/seed.ts -- --remote

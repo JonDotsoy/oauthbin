@@ -161,6 +161,7 @@ scrape_configs:
 
 - `ASTRO_TELEMETRY_DISABLED=1` - Disables Astro telemetry (pre-configured)
 - `ASTRO_DB_REMOTE_URL=file:/data/oauthbin.db` - Database location (pre-configured)
+- `DEV_TOOLBAR_ENABLED=false` - Disables Astro dev toolbar (pre-configured)
 
 ## 💾 Data Persistence
 
