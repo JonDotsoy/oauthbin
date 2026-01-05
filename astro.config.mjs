@@ -7,6 +7,8 @@ import node from '@astrojs/node';
 
 import db from '@astrojs/db';
 
+import react from '@astrojs/react';
+
 // https://astro.build/config
 export default defineConfig({
   vite: {
@@ -17,5 +19,5 @@ export default defineConfig({
     mode: 'standalone'
   }),
 
-  integrations: [db()]
+  integrations: [db(), react()]
 });
