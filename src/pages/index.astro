@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { oauth } from '../lib/oauth';
 import SecretToggle from '../components/ui/SecretToggle';
+import Clipboard from '../components/ui/Clipboard';
 
 export const prerender = false;
 
@@ -32,11 +33,15 @@ for await (const token of oauth.listTokens()) {
 			<div class="space-y-3">
 				<div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0">
 					<span class="font-semibold text-gray-700 text-sm sm:text-base">Authorization URI:</span>
-					<code class="sm:ml-2 text-blue-600 font-mono text-xs sm:text-sm break-all">{Astro.url.origin}/authorize</code>
+					<Clipboard value={`${Astro.url.origin}/authorize`} client:load>
+						<code class="text-blue-600 font-mono text-xs sm:text-sm break-all">{Astro.url.origin}/authorize</code>
+					</Clipboard>
 				</div>
 				<div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0">
 					<span class="font-semibold text-gray-700 text-sm sm:text-base">Token URI:</span>
-					<code class="sm:ml-2 text-blue-600 font-mono text-xs sm:text-sm break-all">{Astro.url.origin}/api/token</code>
+					<Clipboard value={`${Astro.url.origin}/api/token`} client:load>
+						<code class="text-blue-600 font-mono text-xs sm:text-sm break-all">{Astro.url.origin}/api/token</code>
+					</Clipboard>
 				</div>
 			</div>
 		</div>
@@ -58,9 +63,18 @@ for await (const token of oauth.listTokens()) {
 						<tbody>
 							{clients.map((client) => (
 								<tr class="border-b border-gray-100 hover:bg-gray-50">
-									<td class="py-2 sm:py-3 px-2 sm:px-4 text-gray-800 font-mono text-xs sm:text-sm break-all">{client.client_id}</td>
+									<td class="py-2 sm:py-3 px-2 sm:px-4 text-gray-800 font-mono text-xs sm:text-sm break-all">
+										<Clipboard value={client.client_id} client:load>
+											<span>{client.client_id}</span>
+										</Clipboard>
+									</td>
 									<td class="py-2 sm:py-3 px-2 sm:px-4 text-gray-800">
-										<SecretToggle value={client.client_secret} client:load />
+										<div class="flex items-center gap-2">
+											<SecretToggle value={client.client_secret} client:load />
+											<Clipboard value={client.client_secret} client:load>
+												<span></span>
+											</Clipboard>
+										</div>
 									</td>
 								</tr>
 							))}
