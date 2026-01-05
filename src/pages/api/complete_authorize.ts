@@ -1,9 +1,13 @@
 import type { APIRoute } from "astro";
 import { oauth } from "../../lib/oauth";
+import { httpRequestsTotal, httpRequestDuration, oauthErrorsTotal, authCodesGeneratedTotal, tokensGeneratedTotal } from "../../components/stores/metric";
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
+    const startTime = Date.now();
+    let statusCode = 200;
+    
     try {
         const formData = await request.formData();
         const username = formData.get("username") as string;
@@ -26,13 +30,16 @@ export const POST: APIRoute = async ({ request }) => {
             if (!state) missingFields.push("state");
             if (!redirect_uri) missingFields.push("redirect_uri");
 
+            statusCode = 400;
+            oauthErrorsTotal.inc({ error_type: 'invalid_request', endpoint: '/api/complete_authorize' });
+            
             return new Response(
                 JSON.stringify({
                     error: "invalid_request",
                     error_description: `Missing required fields: ${missingFields.join(", ")}`,
                 }),
                 {
-                    status: 400,
+                    status: statusCode,
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -64,6 +71,7 @@ export const POST: APIRoute = async ({ request }) => {
         if (response_type === "token") {
             // Generar token directamente
             const token = await oauth.generateToken(client_id, scope);
+            tokensGeneratedTotal.inc({ grant_type: 'implicit', client_id });
             
             // En el flujo implícito, el token se devuelve en el fragment (#) de la URL
             redirectUrl.hash = new URLSearchParams({
@@ -82,7 +90,8 @@ export const POST: APIRoute = async ({ request }) => {
                 username,
             });
             
-            return Response.redirect(redirectUrl.toString(), 302);
+            statusCode = 302;
+            return Response.redirect(redirectUrl.toString(), statusCode);
         }
 
         // Flujo de código de autorización (response_type=code)
@@ -93,6 +102,8 @@ export const POST: APIRoute = async ({ request }) => {
             code_challenge || undefined,
             code_challenge_method || undefined
         );
+        
+        authCodesGeneratedTotal.inc({ client_id, response_type });
 
         // Construir URL de redirección con el código y el state
         redirectUrl.searchParams.set("code", code.code_id);
@@ -106,20 +117,28 @@ export const POST: APIRoute = async ({ request }) => {
         });
         
         // Redirigir al callback
-        return Response.redirect(redirectUrl.toString(), 302);
+        statusCode = 302;
+        return Response.redirect(redirectUrl.toString(), statusCode);
     } catch (error) {
         console.error("Error processing the request:", error);
+        statusCode = 500;
+        oauthErrorsTotal.inc({ error_type: 'server_error', endpoint: '/api/complete_authorize' });
+        
         return new Response(
             JSON.stringify({
                 error: "server_error",
                 error_description: "An error occurred processing the request",
             }),
             {
-                status: 500,
+                status: statusCode,
                 headers: {
                     "Content-Type": "application/json",
                 },
             }
         );
+    } finally {
+        const duration = (Date.now() - startTime) / 1000;
+        httpRequestsTotal.inc({ method: 'POST', endpoint: '/api/complete_authorize', status: statusCode.toString() });
+        httpRequestDuration.observe({ method: 'POST', endpoint: '/api/complete_authorize', status: statusCode.toString() }, duration);
     }
 };
