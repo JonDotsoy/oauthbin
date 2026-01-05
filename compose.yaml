@@ -4,4 +4,9 @@ services:
     build: .
     ports:
       - 4321:4321
+    volumes:
+      - data:/data
     # command: sleep 5000
+
+volumes:
+  data: {}

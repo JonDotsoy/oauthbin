@@ -1,4 +1,4 @@
-# Mock OAuth Provider
+# OAuthBin
 
 Un servidor OAuth 2.0 completo y fácil de configurar, construido con Astro y Astro DB. Ideal para desarrollo, testing y prototipado rápido de aplicaciones que requieren autenticación OAuth.
 
@@ -9,6 +9,7 @@ Un servidor OAuth 2.0 completo y fácil de configurar, construido con Astro y As
 - ✅ Soporte PKCE (Proof Key for Code Exchange) para mayor seguridad
 - ✅ Base de datos integrada con Astro DB
 - ✅ API REST lista para usar
+- ✅ Métricas Prometheus integradas para monitoreo
 - ✅ Configuración mínima requerida
 
 ## 📋 Requisitos
@@ -221,6 +222,65 @@ grant_type=refresh_token&refresh_token=uuid-refresh-token
   "scope": "photo",
   "refresh_token": "new-uuid-refresh-token"
 }
+```
+
+## 📊 Métricas y Monitoreo
+
+El servidor expone métricas en formato Prometheus para monitoreo y observabilidad.
+
+### Endpoint de Métricas
+
+```http
+GET http://localhost:4321/api/metric
+```
+
+### Métricas Disponibles
+
+#### Métricas HTTP
+- **http_requests_total**: Contador total de requests HTTP
+  - Labels: `method`, `endpoint`, `status`
+- **http_request_duration_seconds**: Histograma de duración de requests HTTP
+  - Labels: `method`, `endpoint`, `status`
+  - Buckets: 0.005s, 0.01s, 0.025s, 0.05s, 0.1s, 0.25s, 0.5s, 1s, 2.5s, 5s, 10s
+
+#### Métricas OAuth
+- **oauth_errors_total**: Contador de errores OAuth
+  - Labels: `error_type`, `endpoint`
+- **oauth_tokens_generated_total**: Contador de tokens generados
+  - Labels: `grant_type`, `client_id`
+- **oauth_auth_codes_generated_total**: Contador de códigos de autorización generados
+  - Labels: `client_id`, `response_type`
+
+#### Métricas del Sistema
+- Métricas por defecto de Node.js (uso de CPU, memoria, event loop, etc.)
+
+### Integración con Prometheus
+
+Agrega el siguiente job a tu configuración de Prometheus (`prometheus.yml`):
+
+```yaml
+scrape_configs:
+  - job_name: 'mock-oauth-provider'
+    static_configs:
+      - targets: ['localhost:4321']
+    metrics_path: '/api/metric'
+    scrape_interval: 15s
+```
+
+### Ejemplo de Consultas PromQL
+
+```promql
+# Rate de requests por segundo
+rate(http_requests_total[5m])
+
+# Latencia p95 de requests
+histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+
+# Total de tokens generados por tipo de grant
+sum by (grant_type) (oauth_tokens_generated_total)
+
+# Rate de errores OAuth
+rate(oauth_errors_total[5m])
 ```
 
 ## 🗄️ Estructura de la Base de Datos
