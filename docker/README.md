@@ -39,6 +39,32 @@ services:
       - "4321:4321"
 ```
 
+## 🔧 Postman Configuration
+
+You can easily test OAuthBin using Postman with the Authorization Code flow:
+
+![Postman Configuration](../docs/assets/postman-code-configuration.png)
+
+**Configuration steps:**
+
+1. Create a new request in Postman
+2. Go to the **Authorization** tab
+3. Select **OAuth 2.0** as the type
+4. Click **Configure New Token** and use these values:
+   - **Grant type**: Authorization Code
+   - **Callback URL**: `https://httpbin.io/get`
+   - **Auth URL**: `http://localhost:4321/authorize`
+   - **Access Token URL**: `http://localhost:4321/api/token`
+   - **Client ID**: `20260104.apps.localhost`
+   - **Client Secret**: `20260104.secret`
+   - **Scope**: `photo`
+   - **State**: `sample` (or any value)
+   - **Client Authentication**: Send client credentials in body
+
+5. Click **Get New Access Token**
+6. Complete the authorization in the browser
+7. Use the generated token in your requests
+
 ## 📚 Usage Examples
 
 ### Authorization Code Flow
