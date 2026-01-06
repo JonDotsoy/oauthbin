@@ -25,5 +25,9 @@ export default defineConfig({
     mode: 'standalone'
   }),
 
-  integrations: [db(), react()]
+  integrations: [db(), react()],
+
+  security: {
+    checkOrigin: false
+  }
 });

@@ -1,11 +1,17 @@
 services:
-  services:
+  oauthbin:
     image: jondotsoy/oauthbin
-    build: .
+    build: 
+      context: .
+      target: prod
     ports:
       - 4321:4321
     volumes:
       - data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 64M
     # command: sleep 5000
 
 volumes:
