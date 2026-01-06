@@ -13,6 +13,8 @@ const devToolbarEnabled = ["true", "on", "1"].includes(process.env.DEV_TOOLBAR_E
 
 // https://astro.build/config
 export default defineConfig({
+  output: "server",
+
   devToolbar: {
     enabled: devToolbarEnabled
   },

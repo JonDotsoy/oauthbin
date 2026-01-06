@@ -1,6 +1,6 @@
 services:
   oauthbin:
-    image: jondotsoy/oauthbin
+    image: jondotsoy/oauthbin:latest
     build: 
       context: .
       target: prod
