@@ -35,7 +35,7 @@ const OAuthTokens = defineTable({
 
 // https://astro.build/db/config
 export default defineDb({
-  tables: { 
+  tables: {
     ResolutionCodes,
     OAuthClients,
     OAuthCodes,

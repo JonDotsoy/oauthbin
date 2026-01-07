@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 1s
+
+scrape_configs:
+  - job_name: 'oauthbin'
+    metrics_path: /api/metrics
+    scheme: http
+    static_configs:
+      - targets: ['oauthbin:4321']

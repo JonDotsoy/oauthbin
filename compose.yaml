@@ -1,7 +1,7 @@
 services:
   oauthbin:
     image: jondotsoy/oauthbin:latest
-    build: 
+    build:
       context: .
       target: prod
     ports:
@@ -11,8 +11,45 @@ services:
     deploy:
       resources:
         limits:
-          memory: 64M
+          memory: 128M
     # command: sleep 5000
+
+  prometheus:
+    image: prom/prometheus:latest
+    depends_on:
+      - oauthbin
+    ports:
+      - 9090:9090
+    volumes:
+      - ./docker/services/grafana/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  grafana:
+    image: grafana/grafana:latest
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    volumes:
+      - ./docker/services/grafana/grafana.yml:/etc/grafana/provisioning/datasources/datasources.yaml
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
 volumes:
   data: {}
+  prometheus: {}

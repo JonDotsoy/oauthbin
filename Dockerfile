@@ -15,6 +15,13 @@ ENV NODE_ENV=develpment
 RUN npm install
 
 ####################################################################
+FROM base AS deps-prod
+
+COPY --from=deps /app/node_modules /app/node_modules
+RUN rm -rf node_modules/@esbuild/linux-arm64
+RUN rm -rf node_modules/esbuild
+
+####################################################################
 FROM base AS builder
 
 COPY --from=deps /app/node_modules /app/node_modules
@@ -47,12 +54,9 @@ ENV PORT=4321
 
 RUN mkdir -p /data/
 
-COPY package*.json ./
-
-COPY --from=deps /app/node_modules /app/node_modules
+COPY --from=deps-prod /app/node_modules /app/node_modules
 COPY --from=builder /app/dist /app/dist
 COPY --from=builder /data/oauthbin.db /data/oauthbin.db
-COPY . .
 
 VOLUME [ "/data" ]
 
